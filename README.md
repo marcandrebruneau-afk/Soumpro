@@ -1,2 +1,0 @@
-# Soumpro
-Générateur de soumissions
