@@ -1,0 +1,1433 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>SoumPro — Démo interactive</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --noir: #0c0c0c;
+  --beton: #161616;
+  --acier: #212121;
+  --acier2: #2a2a2a;
+  --gris: #383838;
+  --gris-txt: #888;
+  --gris-clair: #bbb;
+  --blanc: #f3f1ed;
+  --orange: #e8651a;
+  --orange2: #f07830;
+  --jaune: #f5c518;
+  --vert: #2ecc71;
+  --bordure: #252525;
+}
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  background: var(--noir);
+  color: var(--blanc);
+  font-family: 'Barlow', sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* ══════════════════════════════
+   TOPBAR
+══════════════════════════════ */
+.topbar {
+  background: var(--noir);
+  border-bottom: 2px solid var(--orange);
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+}
+.topbar-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px;
+  letter-spacing: 4px;
+  color: var(--blanc);
+}
+.topbar-logo span { color: var(--orange); }
+
+.topbar-center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(232,101,26,.12);
+  border: 1px solid rgba(232,101,26,.25);
+  color: var(--orange);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 2px;
+}
+.pulse { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--vert); animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.65)} }
+
+.topbar-cta a {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: var(--orange);
+  color: #fff;
+  padding: 7px 14px;
+  border-radius: 2px;
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════
+   LAYOUT PRINCIPAL
+══════════════════════════════ */
+.app {
+  margin-top: 52px;
+  height: calc(100vh - 52px);
+  height: calc(100dvh - 52px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Tab switcher — mobile seulement */
+.tab-bar {
+  display: none;
+  background: var(--beton);
+  border-bottom: 1px solid var(--bordure);
+  flex-shrink: 0;
+}
+.tab-bar-inner {
+  display: flex;
+}
+.tab-btn {
+  flex: 1;
+  padding: 12px 8px;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--gris-txt);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.tab-btn.active {
+  color: var(--orange);
+  border-bottom-color: var(--orange);
+}
+.tab-badge {
+  background: var(--orange);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+/* Panels */
+.panels {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 460px 1fr;
+  overflow: hidden;
+}
+
+/* ══════════════════════════════
+   PANNEAU WIZARD
+══════════════════════════════ */
+.wizard-panel {
+  background: var(--beton);
+  border-right: 1px solid var(--bordure);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.wizard-progress {
+  padding: 14px 20px 12px;
+  border-bottom: 1px solid var(--bordure);
+  flex-shrink: 0;
+}
+.wp-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.wp-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--gris-txt);
+}
+.wp-step {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 18px;
+  color: var(--orange);
+  letter-spacing: 1px;
+}
+.wp-bar { height: 3px; background: var(--gris); border-radius: 2px; overflow: hidden; }
+.wp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--orange), var(--jaune));
+  border-radius: 2px;
+  transition: width .5s cubic-bezier(.4,0,.2,1);
+}
+.steps-dots { display: flex; gap: 5px; margin-top: 8px; }
+.dot { flex:1; height:3px; border-radius:2px; background:var(--gris); transition:background .3s; }
+.dot.active { background: var(--orange); }
+.dot.done { background: var(--vert); }
+
+.wizard-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.step { display: none; animation: stepIn .3s ease; }
+.step.active { display: block; }
+@keyframes stepIn {
+  from { opacity:0; transform:translateX(14px); }
+  to { opacity:1; transform:translateX(0); }
+}
+
+.step-eyebrow {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 4px; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 4px;
+}
+.step-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 28px; letter-spacing: 1px;
+  color: var(--blanc); line-height: 1;
+  margin-bottom: 16px;
+}
+
+/* Champs */
+.form-group { margin-bottom: 12px; }
+.form-group:last-child { margin-bottom: 0; }
+label {
+  display: block;
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--gris-clair); margin-bottom: 4px;
+}
+input[type="text"], input[type="number"], input[type="date"],
+input[type="email"], select, textarea {
+  width: 100%;
+  background: var(--acier);
+  border: 1px solid var(--gris);
+  border-radius: 3px;
+  color: var(--blanc);
+  font-family: 'Barlow', sans-serif;
+  font-size: 16px; /* 16px évite le zoom auto sur iOS */
+  padding: 11px 13px;
+  outline: none;
+  transition: border-color .15s, background .15s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--orange);
+  background: #1c1c1c;
+}
+input::placeholder, textarea::placeholder { color: var(--gris); font-size: 14px; }
+select option { background: var(--acier); }
+textarea { resize: none; height: 68px; font-size: 14px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Templates */
+.templates-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tpl-card {
+  background: var(--acier);
+  border: 1px solid var(--gris);
+  border-radius: 3px;
+  padding: 12px 10px;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.tpl-card:active, .tpl-card:hover { border-color: var(--orange); background: #282828; }
+.tpl-card.sel { border-color: var(--orange); background: rgba(232,101,26,.09); }
+.tpl-icon { font-size: 22px; margin-bottom: 5px; }
+.tpl-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 11px;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--blanc);
+}
+.tpl-desc { font-size: 9px; color: var(--gris-txt); margin-top: 2px; }
+
+/* Postes */
+.poste {
+  background: var(--acier);
+  border: 1px solid var(--gris);
+  border-left: 3px solid var(--gris);
+  border-radius: 3px;
+  padding: 11px;
+  margin-bottom: 8px;
+  transition: border-color .15s;
+}
+.poste:focus-within { border-left-color: var(--orange); }
+.p-header { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.p-nom {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 13px;
+  letter-spacing: 1px; text-transform: uppercase;
+  color: var(--jaune); flex: 1;
+  background: transparent; border: none;
+  border-bottom: 1px solid var(--gris);
+  border-radius: 0; padding: 3px 0;
+  font-size: 14px;
+}
+.p-nom:focus { border-color: var(--orange); background: transparent; outline: none; }
+.p-del {
+  background: none; border: none;
+  color: var(--gris); cursor: pointer;
+  font-size: 20px; padding: 0 2px;
+  transition: color .15s; line-height: 1;
+  flex-shrink: 0; min-width: 32px;
+  display: flex; align-items: center; justify-content: center;
+}
+.p-del:active { color: #e05555; }
+.p-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.p-fields label { font-size: 9px; color: var(--gris-txt); margin-bottom: 2px; }
+.p-fields input { font-size: 14px; padding: 8px 10px; }
+.p-result {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 8px; padding-top: 7px;
+  border-top: 1px solid var(--gris);
+}
+.p-result-label { font-size: 9px; letter-spacing: 1px; text-transform: uppercase; color: var(--gris-txt); }
+.p-result-val { font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--orange); }
+
+.btn-add-p {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed var(--gris);
+  border-radius: 3px;
+  color: var(--gris-clair);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 12px;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 11px; cursor: pointer;
+  transition: all .15s; margin-top: 4px;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-add-p:active { border-color: var(--orange); color: var(--orange); }
+
+/* Marge */
+.marge-big {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 56px; color: var(--orange);
+  letter-spacing: 2px; line-height: 1;
+  margin-bottom: 4px;
+}
+input[type="range"] {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 5px;
+  border-radius: 3px; background: var(--gris);
+  outline: none; padding: 0; border: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--orange);
+  cursor: pointer;
+  box-shadow: 0 0 0 4px rgba(232,101,26,.2);
+}
+.range-labels {
+  display: flex; justify-content: space-between;
+  font-size: 10px; color: var(--gris-txt);
+  margin-top: 6px; letter-spacing: 1px;
+}
+.recap-box {
+  background: var(--acier);
+  border-left: 3px solid var(--orange);
+  border-radius: 2px;
+  padding: 14px 16px;
+  margin-top: 20px;
+}
+.recap-tag {
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 3px; text-transform: uppercase;
+  color: var(--orange); margin-bottom: 10px;
+}
+.recap-line {
+  display: flex; justify-content: space-between;
+  font-size: 13px; color: var(--gris-clair);
+  padding: 4px 0;
+}
+.recap-line.total {
+  font-size: 15px; font-weight: 700;
+  color: var(--blanc);
+  border-top: 1px solid var(--gris);
+  padding-top: 10px; margin-top: 4px;
+}
+.recap-line.total span:last-child { color: var(--orange); }
+
+.info-box {
+  background: rgba(46,204,113,.07);
+  border: 1px solid rgba(46,204,113,.2);
+  border-radius: 3px;
+  padding: 12px 14px;
+}
+.info-box-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 11px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--vert); margin-bottom: 4px;
+}
+.info-box p { font-size: 12px; color: var(--gris-clair); line-height: 1.5; }
+
+/* Wizard footer */
+.wizard-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--bordure);
+  display: flex; gap: 8px;
+  flex-shrink: 0;
+  background: var(--beton);
+}
+.btn-prev {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 13px;
+  letter-spacing: 2px; text-transform: uppercase;
+  border-radius: 3px; padding: 13px 18px;
+  cursor: pointer; transition: all .15s;
+  background: var(--acier); color: var(--gris-clair);
+  border: 1px solid var(--gris);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-prev:active { border-color: var(--blanc); color: var(--blanc); }
+.btn-next {
+  flex: 1;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 14px;
+  letter-spacing: 2px; text-transform: uppercase;
+  border-radius: 3px; padding: 13px;
+  cursor: pointer; transition: all .15s;
+  border: none; background: var(--orange); color: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-next:active { background: var(--orange2); }
+.btn-generate {
+  flex: 1;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700; font-size: 14px;
+  letter-spacing: 2px; text-transform: uppercase;
+  border-radius: 3px; padding: 13px;
+  cursor: pointer; transition: all .15s;
+  border: none; background: var(--vert); color: #fff;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-generate:active { background: #27ae60; }
+
+/* ══════════════════════════════
+   PANNEAU APERÇU
+══════════════════════════════ */
+.preview-panel {
+  background: #b0aca5;
+  background-image: radial-gradient(circle, #a09c96 1px, transparent 1px);
+  background-size: 20px 20px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 16px 40px;
+  position: relative;
+}
+
+/* Overlay initial */
+.p-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10,10,10,.85);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  z-index: 10;
+  transition: opacity .4s, visibility .4s;
+  padding: 20px;
+  text-align: center;
+}
+.p-overlay.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.po-icon { font-size: 48px; margin-bottom: 12px; }
+.po-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 24px; letter-spacing: 2px;
+  color: var(--blanc); margin-bottom: 6px;
+}
+.po-sub { font-size: 13px; font-weight: 300; color: var(--gris-txt); line-height: 1.5; max-width: 260px; }
+.feature-pills {
+  display: flex; flex-wrap: wrap;
+  gap: 6px; justify-content: center;
+  margin-top: 20px; max-width: 300px;
+}
+.pill {
+  background: rgba(232,101,26,.1);
+  border: 1px solid rgba(232,101,26,.22);
+  color: var(--orange);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px; font-weight: 700;
+  letter-spacing: 2px; text-transform: uppercase;
+  padding: 5px 10px; border-radius: 2px;
+}
+
+/* Total flottant */
+.float-total {
+  position: sticky;
+  top: 8px; z-index: 5;
+  display: none;
+  justify-content: center;
+  margin-bottom: 14px;
+  pointer-events: none;
+}
+.ft-chip {
+  background: rgba(12,12,12,.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--bordure);
+  border-radius: 100px;
+  padding: 7px 18px;
+  display: flex; align-items: center; gap: 10px;
+  box-shadow: 0 4px 20px rgba(0,0,0,.5);
+}
+.ft-label { font-size: 10px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--gris-txt); }
+.ft-divider { width: 1px; height: 18px; background: var(--gris); }
+.ft-val { font-family:'Bebas Neue',sans-serif; font-size:20px; color:var(--orange); letter-spacing:1px; }
+
+/* Document */
+.doc-wrap { width: 100%; max-width: 660px; position: relative; z-index: 1; display: none; }
+.doc {
+  background: #fff;
+  color: #111;
+  box-shadow: 0 6px 40px rgba(0,0,0,.5), 0 2px 6px rgba(0,0,0,.3);
+  font-family: 'Barlow', sans-serif;
+  font-size: 11px;
+  animation: docIn .5s cubic-bezier(.175,.885,.32,1.275) both;
+}
+@keyframes docIn {
+  from { opacity:0; transform:scale(.96) translateY(16px); }
+  to { opacity:1; transform:scale(1) translateY(0); }
+}
+
+.doc-top { background:#111; padding:20px 26px; display:flex; justify-content:space-between; align-items:flex-start; }
+.doc-ent-nom { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; text-transform:uppercase; color:#fff; }
+.doc-ent-tag { font-size:8px; letter-spacing:3px; text-transform:uppercase; color:#777; margin-top:1px; }
+.doc-ent-coords { margin-top:7px; font-size:10px; color:#aaa; line-height:1.5; }
+.doc-soum-block { text-align:right; }
+.doc-soum-tag { font-size:8px; letter-spacing:2px; text-transform:uppercase; color:#666; }
+.doc-soum-num { font-family:'Bebas Neue',sans-serif; font-size:24px; color:#e8651a; line-height:1; margin:2px 0; }
+.doc-soum-date { font-size:9px; color:#888; }
+.doc-stripe { height:3px; background:linear-gradient(90deg,#e8651a,#f5c518); }
+.doc-infos { display:grid; grid-template-columns:1fr 1fr; border-bottom:1px solid #ece9e3; }
+.doc-ic { padding:13px 24px; }
+.doc-ic+.doc-ic { border-left:1px solid #ece9e3; }
+.doc-ic-tag { font-size:7px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#bbb; margin-bottom:3px; }
+.doc-ic-nom { font-size:12px; font-weight:700; color:#111; }
+.doc-ic-sub { font-size:9px; color:#888; margin-top:2px; line-height:1.5; }
+.doc-desc { padding:10px 24px; background:#faf8f4; border-bottom:1px solid #ece9e3; font-size:10px; color:#666; line-height:1.5; }
+.doc-desc-tag { font-size:7px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#bbb; margin-bottom:3px; }
+.doc-travaux { padding:16px 24px 0; }
+.doc-travaux-tag { font-size:7px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#e8651a; margin-bottom:7px; }
+.trav-table { width:100%; border-collapse:collapse; }
+.trav-table thead tr { background:#111; }
+.trav-table thead th { font-family:'Barlow Condensed',sans-serif; font-size:8px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#fff; padding:7px 9px; text-align:left; }
+.trav-table thead th:last-child { text-align:right; }
+.trav-table tbody tr { border-bottom:1px solid #f0ece6; }
+.trav-table tbody tr:nth-child(even) { background:#faf8f4; }
+.trav-table tbody td { padding:8px 9px; }
+.p-bar { display:inline-block; width:3px; height:11px; background:#e8651a; border-radius:1px; margin-right:6px; vertical-align:middle; }
+.p-name { font-weight:600; font-size:10px; color:#222; vertical-align:middle; }
+.p-price { text-align:right; font-weight:700; font-size:10px; color:#111; }
+.doc-totaux { padding:12px 24px 16px; display:flex; justify-content:flex-end; }
+.tot-inner { width:220px; }
+.tl { display:flex; justify-content:space-between; padding:4px 0; font-size:10px; color:#777; border-bottom:1px solid #f0ece6; }
+.tl.bold { color:#333; font-weight:700; font-size:11px; }
+.tl.tax { color:#aaa; font-size:9px; }
+.tl-final { background:#111; padding:9px 12px; border-radius:2px; display:flex; justify-content:space-between; align-items:center; margin-top:7px; }
+.tl-final .fl { font-size:8px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#aaa; }
+.tl-final .fv { font-family:'Bebas Neue',sans-serif; font-size:20px; color:#e8651a; }
+.doc-conds { padding:11px 24px; border-top:1px solid #ece9e3; background:#faf8f4; }
+.dc-blk { margin-bottom:8px; }
+.dc-blk:last-child { margin-bottom:0; }
+.dc-tag { font-size:7px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#bbb; margin-bottom:2px; }
+.dc-txt { font-size:10px; color:#777; line-height:1.5; }
+.doc-foot { background:#111; padding:8px 24px; display:flex; justify-content:space-between; font-size:8px; color:#555; letter-spacing:.5px; flex-wrap:wrap; gap:4px; }
+.doc-foot .valid { color:#e8651a; }
+
+/* Actions sous le doc */
+.doc-actions { display:flex; gap:8px; margin-top:12px; width:100%; max-width:660px; }
+.btn-pdf {
+  flex:1; background:var(--orange); color:#fff; border:none; border-radius:3px;
+  font-family:'Barlow Condensed',sans-serif; font-weight:700; font-size:13px;
+  letter-spacing:2px; text-transform:uppercase; padding:13px;
+  cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+  -webkit-tap-highlight-color:transparent;
+}
+.btn-pdf:active { background:var(--orange2); }
+.btn-reset {
+  background:var(--acier2); color:var(--gris-clair); border:1px solid var(--gris);
+  border-radius:3px; font-family:'Barlow Condensed',sans-serif; font-weight:700;
+  font-size:12px; letter-spacing:2px; text-transform:uppercase; padding:13px 16px;
+  cursor:pointer; transition:all .15s; -webkit-tap-highlight-color:transparent;
+}
+.btn-reset:active { border-color:var(--orange); color:var(--orange); }
+
+/* Flash succès */
+.flash {
+  position:fixed; inset:0;
+  background:rgba(46,204,113,.07);
+  pointer-events:none; z-index:9999;
+  opacity:0; transition:opacity .3s;
+}
+.flash.show { opacity:1; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--gris); border-radius:2px; }
+
+/* ══════════════════════════════
+   RESPONSIVE — MOBILE FIRST
+══════════════════════════════ */
+@media (max-width: 768px) {
+  body { overflow: hidden; }
+
+  .topbar { padding: 0 14px; }
+  .topbar-center { display: none; } /* trop petit sur mobile */
+
+  .tab-bar { display: block; }
+
+  .panels {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+  }
+
+  /* Vue formulaire */
+  .wizard-panel {
+    display: flex;
+    position: absolute;
+    inset: calc(52px + 44px) 0 0 0; /* topbar + tabbar */
+    z-index: 2;
+    transition: transform .35s cubic-bezier(.4,0,.2,1), opacity .35s;
+  }
+  .wizard-panel.tab-hidden {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Vue aperçu */
+  .preview-panel {
+    position: absolute;
+    inset: calc(52px + 44px) 0 0 0;
+    z-index: 2;
+    transition: transform .35s cubic-bezier(.4,0,.2,1), opacity .35s;
+  }
+  .preview-panel.tab-hidden {
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  /* Réduire la grille 2 colonnes des champs sur très petit écran */
+  .form-row { grid-template-columns: 1fr; gap: 8px; }
+
+  .step-title { font-size: 24px; }
+  .marge-big { font-size: 48px; }
+}
+
+@media (min-width: 769px) {
+  .app { overflow: hidden; }
+  .tab-bar { display: none; }
+  .panels {
+    position: relative;
+    overflow: hidden;
+  }
+  .wizard-panel, .preview-panel {
+    position: relative;
+    inset: auto;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+}
+
+/* Tablette portrait : un peu plus serré */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .panels { grid-template-columns: 380px 1fr; }
+  .wizard-body { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="flash" id="flash"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">Soum<span>Pro</span></div>
+  <div class="topbar-center"><span class="pulse"></span>Démo live</div>
+  <div class="topbar-cta"><a href="#">Créer mon compte</a></div>
+</div>
+
+<!-- APP -->
+<div class="app">
+
+  <!-- TAB BAR (mobile) -->
+  <div class="tab-bar">
+    <div class="tab-bar-inner">
+      <button class="tab-btn active" id="tab-form" onclick="switchTab('form')">
+        ✏️ Formulaire
+      </button>
+      <button class="tab-btn" id="tab-preview" onclick="switchTab('preview')">
+        📄 Soumission
+        <span class="tab-badge" id="tab-badge" style="display:none;">✓</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="panels">
+
+    <!-- ── WIZARD ── -->
+    <div class="wizard-panel" id="wizard-panel">
+
+      <div class="wizard-progress">
+        <div class="wp-top">
+          <div class="wp-title">Construis ta soumission</div>
+          <div class="wp-step" id="step-counter">1 / 5</div>
+        </div>
+        <div class="wp-bar"><div class="wp-fill" id="progress-fill" style="width:20%"></div></div>
+        <div class="steps-dots">
+          <div class="dot active" id="dot-1"></div>
+          <div class="dot" id="dot-2"></div>
+          <div class="dot" id="dot-3"></div>
+          <div class="dot" id="dot-4"></div>
+          <div class="dot" id="dot-5"></div>
+        </div>
+      </div>
+
+      <div class="wizard-body">
+
+        <!-- ÉTAPE 1 -->
+        <div class="step active" id="step-1">
+          <div class="step-eyebrow">Étape 1</div>
+          <div class="step-title">Type de projet</div>
+          <div class="templates-grid">
+            <div class="tpl-card sel" id="tpl-maison" onclick="selectTpl('maison')">
+              <div class="tpl-icon">🏠</div>
+              <div class="tpl-name">Maison neuve</div>
+              <div class="tpl-desc">Unifamiliale, bi-génération</div>
+            </div>
+            <div class="tpl-card" id="tpl-chalet" onclick="selectTpl('chalet')">
+              <div class="tpl-icon">🏡</div>
+              <div class="tpl-name">Chalet / Camp</div>
+              <div class="tpl-desc">Construction en forêt</div>
+            </div>
+            <div class="tpl-card" id="tpl-garage" onclick="selectTpl('garage')">
+              <div class="tpl-icon">🏗️</div>
+              <div class="tpl-name">Garage / Annexe</div>
+              <div class="tpl-desc">Détaché ou attaché</div>
+            </div>
+            <div class="tpl-card" id="tpl-commercial" onclick="selectTpl('commercial')">
+              <div class="tpl-icon">🏢</div>
+              <div class="tpl-name">Commercial</div>
+              <div class="tpl-desc">Bureau, entrepôt</div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Description du projet</label>
+            <textarea id="proj-desc" placeholder="Ex: Maison unifamiliale 2 étages, 2 400 pi², fondation béton, garage double." oninput="up()"></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Début des travaux</label>
+              <input type="date" id="proj-debut" oninput="up()">
+            </div>
+            <div class="form-group">
+              <label>Durée estimée</label>
+              <input type="text" id="proj-duree" placeholder="8 mois" oninput="up()">
+            </div>
+          </div>
+        </div>
+
+        <!-- ÉTAPE 2 -->
+        <div class="step" id="step-2">
+          <div class="step-eyebrow">Étape 2</div>
+          <div class="step-title">Client & entreprise</div>
+          <div class="form-group">
+            <label>Nom du client</label>
+            <input type="text" id="cli-nom" placeholder="Jean-François Bouchard" oninput="up()">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Téléphone client</label>
+              <input type="text" id="cli-tel" placeholder="418 555-5678" oninput="up()">
+            </div>
+            <div class="form-group">
+              <label>Courriel client</label>
+              <input type="email" id="cli-email" placeholder="client@courriel.com" oninput="up()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Adresse du chantier</label>
+            <input type="text" id="proj-adresse" placeholder="123 rue des Érables, Lévis, QC" oninput="up()">
+          </div>
+          <div style="height:1px;background:var(--gris);margin:16px 0;"></div>
+          <div class="form-group">
+            <label>Votre entreprise</label>
+            <input type="text" id="ent-nom" placeholder="Construction Tremblay inc." oninput="up()">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Téléphone</label>
+              <input type="text" id="ent-tel" placeholder="418 555-1234" oninput="up()">
+            </div>
+            <div class="form-group">
+              <label>Licence RBQ</label>
+              <input type="text" id="ent-rbq" placeholder="5678-9012-01" oninput="up()">
+            </div>
+          </div>
+        </div>
+
+        <!-- ÉTAPE 3 -->
+        <div class="step" id="step-3">
+          <div class="step-eyebrow">Étape 3</div>
+          <div class="step-title">Postes de travaux</div>
+          <p style="font-size:12px;color:var(--gris-txt);margin-bottom:14px;line-height:1.5;">Ton coût réel + ta marge = le prix client. <strong style="color:var(--gris-clair);">La décomposition reste confidentielle.</strong></p>
+          <div id="postes-container"></div>
+          <button class="btn-add-p" onclick="ajouterPoste()">+ Ajouter un poste</button>
+        </div>
+
+        <!-- ÉTAPE 4 -->
+        <div class="step" id="step-4">
+          <div class="step-eyebrow">Étape 4</div>
+          <div class="step-title">Ta marge</div>
+          <p style="font-size:12px;color:var(--gris-txt);margin-bottom:16px;line-height:1.5;">Invisible pour le client. Appliquée sur tous tes postes.</p>
+          <div class="marge-big" id="marge-display">15%</div>
+          <p style="font-size:12px;color:var(--gris-txt);margin-bottom:10px;">= <strong style="color:var(--blanc);" id="marge-montant">—</strong> de profit</p>
+          <input type="range" id="marge" min="5" max="40" value="15" oninput="updateMarge()">
+          <div class="range-labels"><span>5%</span><span>15%</span><span>25%</span><span>40%</span></div>
+          <div class="form-group" style="margin-top:20px;">
+            <label>Taxes applicables</label>
+            <select id="taxes" onchange="up()">
+              <option value="both">TPS + TVQ (14,975%)</option>
+              <option value="tps">TPS seulement (5%)</option>
+              <option value="none">Sans taxes</option>
+            </select>
+          </div>
+          <div class="recap-box">
+            <div class="recap-tag">Récapitulatif</div>
+            <div class="recap-line"><span>Coûts bruts</span><span id="rc-couts">—</span></div>
+            <div class="recap-line"><span>Votre marge</span><span id="rc-marge" style="color:var(--vert)">—</span></div>
+            <div class="recap-line"><span>Taxes</span><span id="rc-taxes">—</span></div>
+            <div class="recap-line total"><span>Total client</span><span id="rc-total">—</span></div>
+          </div>
+        </div>
+
+        <!-- ÉTAPE 5 -->
+        <div class="step" id="step-5">
+          <div class="step-eyebrow">Étape 5</div>
+          <div class="step-title">Conditions</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Validité</label>
+              <input type="text" id="validite" placeholder="30 jours" oninput="up()">
+            </div>
+            <div class="form-group">
+              <label>Garantie</label>
+              <input type="text" id="garantie" placeholder="1 an pièces + M.O." oninput="up()">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Modalités de paiement</label>
+            <textarea id="paiement" placeholder="20% à la signature, 40% aux fondations, 30% à la mise hors eau, 10% à la livraison." oninput="up()"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Exclusions</label>
+            <textarea id="exclusions" placeholder="Frais de permis, raccordements municipaux, électroménagers." oninput="up()"></textarea>
+          </div>
+          <div class="info-box" style="margin-top:10px;">
+            <div class="info-box-title">✓ Prêt à générer</div>
+            <p>Clique sur le bouton pour créer ta soumission professionnelle instantanément.</p>
+          </div>
+        </div>
+
+      </div><!-- /wizard-body -->
+
+      <div class="wizard-footer">
+        <button class="btn-prev" id="btn-prev" onclick="prevStep()" style="display:none;">← Retour</button>
+        <button class="btn-next" id="btn-next" onclick="nextStep()">Continuer →</button>
+      </div>
+
+    </div><!-- /wizard-panel -->
+
+    <!-- ── APERÇU ── -->
+    <div class="preview-panel tab-hidden" id="preview-panel">
+
+      <div class="p-overlay" id="overlay">
+        <div class="po-icon">📋</div>
+        <div class="po-title">Ta soumission ici</div>
+        <div class="po-sub">Remplis le formulaire et vois ton document se construire en temps réel.</div>
+        <div class="feature-pills">
+          <span class="pill">PDF pro</span>
+          <span class="pill">Marge privée</span>
+          <span class="pill">TPS+TVQ auto</span>
+          <span class="pill">Instantané</span>
+          <span class="pill">RBQ inclus</span>
+        </div>
+      </div>
+
+      <div class="float-total" id="float-total">
+        <div class="ft-chip">
+          <span class="ft-label">Total TTC</span>
+          <div class="ft-divider"></div>
+          <span class="ft-val" id="ft-val">0 $</span>
+        </div>
+      </div>
+
+      <div class="doc-wrap" id="doc-wrap">
+        <div id="doc-container"></div>
+        <div class="doc-actions">
+          <button class="btn-pdf" onclick="telechargerPDF()">⬇ Télécharger PDF</button>
+          <button class="btn-reset" onclick="resetDemo()">↺</button>
+        </div>
+      </div>
+
+    </div><!-- /preview-panel -->
+
+  </div><!-- /panels -->
+</div><!-- /app -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ════════════════════════════
+// ÉTAT
+// ════════════════════════════
+let currentStep = 1;
+const STEPS = 5;
+let postes = [], cpt = 0;
+let soumNum = 'S-' + String(1000 + Math.floor(Math.random() * 900));
+let activeTab = 'form';
+
+const TEMPLATES = {
+  maison: [
+    {nom:'Fondations & béton',mo:8500,mat:12000},
+    {nom:'Charpente & structure',mo:15000,mat:22000},
+    {nom:'Toiture',mo:5500,mat:9000},
+    {nom:'Isolation & vapeur',mo:4200,mat:6800},
+    {nom:'Plomberie',mo:9000,mat:7500},
+    {nom:'Électricité',mo:11000,mat:6000},
+  ],
+  chalet: [
+    {nom:'Fondations & pieux',mo:5500,mat:7000},
+    {nom:'Structure bois',mo:12000,mat:18000},
+    {nom:'Toiture & bardeaux',mo:4500,mat:7000},
+    {nom:'Portes & fenêtres',mo:3000,mat:8500},
+    {nom:'Isolation',mo:3500,mat:5000},
+  ],
+  garage: [
+    {nom:'Dalle de béton',mo:3500,mat:5500},
+    {nom:'Charpente',mo:5500,mat:8000},
+    {nom:'Toiture',mo:2500,mat:4000},
+    {nom:'Portes & accès',mo:1500,mat:4500},
+    {nom:'Électricité',mo:2500,mat:1800},
+  ],
+  commercial: [
+    {nom:'Fondations & structure',mo:22000,mat:35000},
+    {nom:'Enveloppe extérieure',mo:14000,mat:22000},
+    {nom:'Toiture membrane',mo:8000,mat:15000},
+    {nom:'Mécanique & plomberie',mo:18000,mat:14000},
+    {nom:'Électricité',mo:20000,mat:12000},
+    {nom:'Finitions intérieures',mo:16000,mat:20000},
+  ],
+};
+
+// ════════════════════════════
+// INIT
+// ════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  const d = new Date(); d.setDate(d.getDate() + 60);
+  document.getElementById('proj-debut').value = d.toISOString().split('T')[0];
+  chargerTpl('maison');
+  up();
+});
+
+// ════════════════════════════
+// TABS MOBILE
+// ════════════════════════════
+function switchTab(tab) {
+  activeTab = tab;
+  const wizard = document.getElementById('wizard-panel');
+  const preview = document.getElementById('preview-panel');
+  const tbForm = document.getElementById('tab-form');
+  const tbPrev = document.getElementById('tab-preview');
+
+  if (tab === 'form') {
+    wizard.classList.remove('tab-hidden');
+    preview.classList.add('tab-hidden');
+    tbForm.classList.add('active');
+    tbPrev.classList.remove('active');
+  } else {
+    wizard.classList.add('tab-hidden');
+    preview.classList.remove('tab-hidden');
+    tbForm.classList.remove('active');
+    tbPrev.classList.add('active');
+    // Scroll en haut de l'aperçu
+    preview.scrollTo({top: 0, behavior: 'smooth'});
+  }
+}
+
+// ════════════════════════════
+// NAVIGATION WIZARD
+// ════════════════════════════
+function nextStep() {
+  if (currentStep < STEPS) {
+    currentStep++;
+    updateNav();
+  } else {
+    generer();
+  }
+}
+function prevStep() {
+  if (currentStep > 1) { currentStep--; updateNav(); }
+}
+
+function updateNav() {
+  document.querySelectorAll('.step').forEach((s, i) => s.classList.toggle('active', i + 1 === currentStep));
+  for (let i = 1; i <= STEPS; i++) {
+    const d = document.getElementById('dot-' + i);
+    d.classList.remove('active','done');
+    if (i < currentStep) d.classList.add('done');
+    if (i === currentStep) d.classList.add('active');
+  }
+  document.getElementById('progress-fill').style.width = (currentStep / STEPS * 100) + '%';
+  document.getElementById('step-counter').textContent = currentStep + ' / ' + STEPS;
+  const prev = document.getElementById('btn-prev');
+  const next = document.getElementById('btn-next');
+  prev.style.display = currentStep > 1 ? 'block' : 'none';
+  if (currentStep === STEPS) {
+    next.textContent = '✓ Générer la soumission';
+    next.className = 'btn-generate';
+    next.id = 'btn-next';
+  } else {
+    next.textContent = 'Continuer →';
+    next.className = 'btn-next';
+    next.id = 'btn-next';
+  }
+  if (currentStep === 3) renderPostes();
+  up();
+}
+
+// ════════════════════════════
+// TEMPLATES
+// ════════════════════════════
+function selectTpl(id) {
+  document.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('sel'));
+  document.getElementById('tpl-' + id).classList.add('sel');
+  chargerTpl(id);
+}
+function chargerTpl(id) {
+  postes = []; cpt = 0;
+  TEMPLATES[id].forEach(d => postes.push({id:++cpt, nom:d.nom, mo:d.mo, mat:d.mat}));
+  if (document.getElementById('postes-container')) renderPostes();
+  up();
+}
+
+// ════════════════════════════
+// POSTES
+// ════════════════════════════
+function ajouterPoste() {
+  postes.push({id:++cpt, nom:'', mo:0, mat:0});
+  renderPostes(); up();
+}
+function supprimerPoste(id) {
+  postes = postes.filter(p => p.id !== id);
+  renderPostes(); up();
+}
+function updatePoste(id, k, val) {
+  const p = postes.find(x => x.id === id);
+  if (!p) return;
+  p[k] = k === 'nom' ? val : (parseFloat(val) || 0);
+  const idx = postes.indexOf(p);
+  const els = document.querySelectorAll('.poste');
+  if (els[idx]) {
+    const rv = els[idx].querySelector('.p-result-val');
+    if (rv) rv.textContent = fmt(pxClient(p));
+  }
+  up();
+}
+function renderPostes() {
+  const c = document.getElementById('postes-container');
+  if (!c) return;
+  c.innerHTML = '';
+  postes.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'poste';
+    div.innerHTML = `
+      <div class="p-header">
+        <input class="p-nom" type="text" value="${esc(p.nom)}" placeholder="Nom du poste"
+          oninput="updatePoste(${p.id},'nom',this.value)"
+          style="font-size:14px;">
+        <button class="p-del" onclick="supprimerPoste(${p.id})">×</button>
+      </div>
+      <div class="p-fields">
+        <div><label>Main-d'œuvre ($)</label><input type="number" inputmode="numeric" value="${p.mo}" min="0" oninput="updatePoste(${p.id},'mo',this.value)"></div>
+        <div><label>Matériaux ($)</label><input type="number" inputmode="numeric" value="${p.mat}" min="0" oninput="updatePoste(${p.id},'mat',this.value)"></div>
+      </div>
+      <div class="p-result">
+        <span class="p-result-label">Prix client</span>
+        <span class="p-result-val">${fmt(pxClient(p))}</span>
+      </div>`;
+    c.appendChild(div);
+  });
+}
+
+// ════════════════════════════
+// MARGE
+// ════════════════════════════
+function updateMarge() {
+  const m = document.getElementById('marge').value;
+  const md = document.getElementById('marge-display');
+  if (md) md.textContent = m + '%';
+  up();
+}
+
+// ════════════════════════════
+// CALCULS
+// ════════════════════════════
+function pxClient(p) {
+  const m = parseFloat(document.getElementById('marge')?.value || 15);
+  return ((p.mo||0)+(p.mat||0)) * (1 + m/100);
+}
+function calcTotaux() {
+  const marge = parseFloat(document.getElementById('marge')?.value || 15);
+  let couts = 0;
+  postes.forEach(p => couts += (p.mo||0)+(p.mat||0));
+  const montantMarge = couts * marge / 100;
+  const avantTaxes = couts + montantMarge;
+  const taxeMode = document.getElementById('taxes')?.value || 'both';
+  let tps=0, tvq=0;
+  if (taxeMode==='both') { tps=avantTaxes*.05; tvq=avantTaxes*.09975; }
+  if (taxeMode==='tps') { tps=avantTaxes*.05; }
+  return {couts,marge,montantMarge,avantTaxes,tps,tvq,total:avantTaxes+tps+tvq,taxeMode};
+}
+
+// ════════════════════════════
+// FORMAT
+// ════════════════════════════
+function fmt(n) {
+  return new Intl.NumberFormat('fr-CA',{style:'currency',currency:'CAD',minimumFractionDigits:0,maximumFractionDigits:0}).format(n||0);
+}
+function fmtDate(s) {
+  if(!s) return '';
+  return new Date(s+'T00:00:00').toLocaleDateString('fr-CA',{year:'numeric',month:'long',day:'numeric'});
+}
+function v(id) { return document.getElementById(id)?.value?.trim()||''; }
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ════════════════════════════
+// UPDATE APERÇU
+// ════════════════════════════
+function up() {
+  const c = calcTotaux();
+
+  // Marge step
+  const md = document.getElementById('marge-display');
+  if (md) md.textContent = (v('marge') || '15') + '%'; // fallback
+  const mm = document.getElementById('marge-montant');
+  if (mm) mm.textContent = fmt(c.montantMarge);
+  ['rc-couts','rc-marge','rc-taxes','rc-total'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = [fmt(c.couts), fmt(c.montantMarge), fmt(c.tps+c.tvq), fmt(c.total)][i];
+  });
+
+  // Float total
+  const ftv = document.getElementById('ft-val');
+  if (ftv) ftv.textContent = fmt(c.total);
+  const ftw = document.getElementById('float-total');
+  if (ftw && c.couts > 0) ftw.style.display = 'flex';
+
+  // Afficher doc dès qu'il y a du contenu
+  const hasSomeData = v('cli-nom') || v('ent-nom') || c.couts > 0;
+  if (hasSomeData && currentStep >= 2) {
+    document.getElementById('overlay').classList.add('hidden');
+    document.getElementById('doc-wrap').style.display = 'block';
+    // Montrer le badge sur l'onglet aperçu
+    const badge = document.getElementById('tab-badge');
+    if (badge) badge.style.display = 'inline-block';
+    renderDoc(c);
+  }
+}
+
+// ════════════════════════════
+// RENDU DOCUMENT
+// ════════════════════════════
+function renderDoc(c) {
+  const entNom = v('ent-nom')||'Votre Entreprise';
+  const entTel = v('ent-tel'), entRBQ = v('ent-rbq');
+  const cliNom = v('cli-nom')||'—';
+  const cliTel = v('cli-tel'), cliEmail = v('cli-email');
+  const projDate = new Date().toLocaleDateString('fr-CA',{year:'numeric',month:'long',day:'numeric'});
+  const projAdresse = v('proj-adresse')||'—';
+  const projDesc = v('proj-desc');
+  const projDebut = fmtDate(v('proj-debut')), projDuree = v('proj-duree');
+  const validite = v('validite')||'30 jours';
+  const garantie = v('garantie'), paiement = v('paiement'), exclusions = v('exclusions');
+
+  let coords = [];
+  if (entTel) coords.push(esc(entTel));
+  if (entRBQ) coords.push('Lic. RBQ : '+esc(entRBQ));
+
+  let lignes = postes.length ? postes.map(p =>
+    `<tr><td><span class="p-bar"></span><span class="p-name">${esc(p.nom||'—')}</span></td><td class="p-price">${fmt(pxClient(p))}</td></tr>`
+  ).join('') : `<tr><td colspan="2" style="padding:14px 9px;color:#bbb;font-size:10px;text-align:center;">Postes à l'étape 3</td></tr>`;
+
+  let taxLines = '';
+  if (c.taxeMode==='both') taxLines=`<div class="tl tax"><span>TPS (5%)</span><span>${fmt(c.tps)}</span></div><div class="tl tax"><span>TVQ (9,975%)</span><span>${fmt(c.tvq)}</span></div>`;
+  else if (c.taxeMode==='tps') taxLines=`<div class="tl tax"><span>TPS (5%)</span><span>${fmt(c.tps)}</span></div>`;
+
+  const blocs = [{tag:'Modalités de paiement',txt:paiement},{tag:'Garantie',txt:garantie},{tag:'Exclusions',txt:exclusions}].filter(b=>b.txt);
+  const condsHTML = blocs.length ? `<div class="doc-conds">${blocs.map(b=>`<div class="dc-blk"><div class="dc-tag">${b.tag}</div><div class="dc-txt">${esc(b.txt)}</div></div>`).join('')}</div>` : '';
+
+  document.getElementById('doc-container').innerHTML = `
+    <div class="doc">
+      <div class="doc-top">
+        <div>
+          <div class="doc-ent-nom">${esc(entNom)}</div>
+          <div class="doc-ent-tag">Entrepreneur général</div>
+          <div class="doc-ent-coords">${coords.join(' · ')}</div>
+        </div>
+        <div class="doc-soum-block">
+          <div class="doc-soum-tag">Soumission</div>
+          <div class="doc-soum-num">${soumNum}</div>
+          <div class="doc-soum-date">${projDate}</div>
+        </div>
+      </div>
+      <div class="doc-stripe"></div>
+      <div class="doc-infos">
+        <div class="doc-ic">
+          <div class="doc-ic-tag">Préparé pour</div>
+          <div class="doc-ic-nom">${esc(cliNom)}</div>
+          <div class="doc-ic-sub">${[cliTel,cliEmail].filter(Boolean).map(esc).join(' · ')}</div>
+        </div>
+        <div class="doc-ic">
+          <div class="doc-ic-tag">Chantier</div>
+          <div class="doc-ic-nom">${esc(projAdresse)}</div>
+          <div class="doc-ic-sub">${projDebut?'Début : '+projDebut+(projDuree?' · '+projDuree:''):''}</div>
+        </div>
+      </div>
+      ${projDesc?`<div class="doc-desc"><div class="doc-desc-tag">Description</div>${esc(projDesc)}</div>`:''}
+      <div class="doc-travaux">
+        <div class="doc-travaux-tag">Détail des travaux</div>
+        <table class="trav-table">
+          <thead><tr><th>Description</th><th style="text-align:right">Montant</th></tr></thead>
+          <tbody>${lignes}</tbody>
+        </table>
+      </div>
+      <div class="doc-totaux">
+        <div class="tot-inner">
+          <div class="tl bold"><span>Sous-total</span><span>${fmt(c.avantTaxes)}</span></div>
+          ${taxLines}
+          <div class="tl-final"><span class="fl">Total</span><span class="fv">${fmt(c.total)}</span></div>
+        </div>
+      </div>
+      ${condsHTML}
+      <div class="doc-foot">
+        <span>${soumNum} · ${esc(entNom)}</span>
+        <span class="valid">Valide ${esc(validite)}${garantie?' · '+esc(garantie):''}</span>
+      </div>
+    </div>`;
+}
+
+// ════════════════════════════
+// GÉNÉRER
+// ════════════════════════════
+function generer() {
+  const c = calcTotaux();
+  const flash = document.getElementById('flash');
+  flash.classList.add('show');
+  setTimeout(() => flash.classList.remove('show'), 600);
+
+  document.getElementById('overlay').classList.add('hidden');
+  document.getElementById('doc-wrap').style.display = 'block';
+  document.getElementById('float-total').style.display = 'flex';
+  renderDoc(c);
+
+  // Sur mobile : basculer vers l'aperçu automatiquement
+  if (window.innerWidth <= 768) {
+    setTimeout(() => switchTab('preview'), 300);
+  }
+}
+
+// ════════════════════════════
+// PDF
+// ════════════════════════════
+async function telechargerPDF() {
+  const {jsPDF} = window.jspdf;
+  const doc = new jsPDF({unit:'mm',format:'letter'});
+  const c = calcTotaux(), PW=215.9, M=15;
+
+  const entNom=v('ent-nom')||'Votre Entreprise';
+  const entTel=v('ent-tel'), entRBQ=v('ent-rbq');
+  const cliNom=v('cli-nom')||'Client';
+  const cliTel=v('cli-tel'), cliEmail=v('cli-email');
+  const projDate=new Date().toLocaleDateString('fr-CA',{year:'numeric',month:'long',day:'numeric'});
+  const projAdresse=v('proj-adresse');
+  const projDesc=v('proj-desc');
+  const projDebut=fmtDate(v('proj-debut')), projDuree=v('proj-duree');
+  const validite=v('validite')||'30 jours';
+  const garantie=v('garantie'), paiement=v('paiement'), exclusions=v('exclusions');
+
+  let y=0;
+  doc.setFillColor(17,17,17); doc.rect(0,0,PW,42,'F');
+  doc.setFillColor(232,101,26); doc.rect(0,42,PW*.6,2,'F');
+  doc.setFillColor(245,197,24); doc.rect(PW*.6,42,PW*.4,2,'F');
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(18); doc.setTextColor(244,242,238);
+  doc.text(entNom.toUpperCase(),M,14);
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,150,150);
+  doc.text('ENTREPRENEUR GÉNÉRAL',M,19);
+  let cy=24;
+  if(entTel){doc.text(entTel,M,cy);cy+=4;}
+  if(entRBQ){doc.text('Lic. RBQ : '+entRBQ,M,cy);}
+
+  doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(120,120,120);
+  doc.text('SOUMISSION',PW-M,10,{align:'right'});
+  doc.setFontSize(22); doc.setTextColor(232,101,26);
+  doc.text(soumNum,PW-M,21,{align:'right'});
+  doc.setFontSize(9); doc.setTextColor(140,140,140);
+  doc.text(projDate,PW-M,27,{align:'right'});
+  y=48;
+
+  const colW=(PW-2*M-4)/2;
+  doc.setFillColor(250,249,246);
+  doc.rect(M,y,colW,26,'F'); doc.rect(M+colW+4,y,colW,26,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(170,170,170);
+  doc.text('PRÉPARÉ POUR',M+4,y+5); doc.text('CHANTIER',M+colW+8,y+5);
+  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(30,30,30);
+  doc.text(cliNom,M+4,y+12);
+  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,90,90);
+  let cly=y+17;
+  if(cliTel){doc.text(cliTel,M+4,cly);cly+=4;} if(cliEmail)doc.text(cliEmail,M+4,cly);
+  if(projAdresse){
+    doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.setTextColor(30,30,30);
+    const al=doc.splitTextToSize(projAdresse,colW-10); doc.text(al,M+colW+8,y+12);
+  }
+  if(projDebut){doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,100);doc.text('Début : '+projDebut+(projDuree?' · '+projDuree:''),M+colW+8,y+22);}
+  y+=32;
+
+  if(projDesc){
+    doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(180,180,180);doc.text('DESCRIPTION',M,y);y+=4;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(80,80,80);
+    const dl=doc.splitTextToSize(projDesc,PW-2*M);doc.text(dl,M,y);y+=dl.length*4+5;
+  }
+
+  doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(232,101,26);doc.text('DÉTAIL DES TRAVAUX',M,y);y+=4;
+  doc.setFillColor(17,17,17);doc.rect(M,y,PW-2*M,8,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(8);doc.setTextColor(255,255,255);
+  doc.text('DESCRIPTION',M+4,y+5.5);doc.text('MONTANT',PW-M-2,y+5.5,{align:'right'});y+=8;
+
+  postes.forEach((p,i)=>{
+    if(y>238){doc.addPage();y=15;}
+    doc.setFillColor(...(i%2===0?[255,255,255]:[250,249,246]));
+    doc.rect(M,y,PW-2*M,9,'F');
+    doc.setFillColor(232,101,26);doc.rect(M,y,2.5,9,'F');
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.setTextColor(30,30,30);
+    doc.text(p.nom||'Poste',M+6,y+6);
+    doc.text(fmt(pxClient(p)),PW-M-2,y+6,{align:'right'});y+=9;
+  });
+  y+=6;
+
+  const totW=85,tx=PW-M-totW;
+  function tLine(label,val,bold=false){
+    doc.setDrawColor(220,218,214);doc.line(tx,y,PW-M,y);
+    doc.setFont('helvetica',bold?'bold':'normal');doc.setFontSize(9);
+    doc.setTextColor(bold?40:110,bold?40:110,bold?40:110);
+    doc.text(label,tx+2,y+5.5);doc.text(val,PW-M-2,y+5.5,{align:'right'});y+=8;
+  }
+  tLine('Sous-total',fmt(c.avantTaxes),true);
+  if(c.taxeMode==='both'){tLine('TPS (5%)',fmt(c.tps));tLine('TVQ (9,975%)',fmt(c.tvq));}
+  else if(c.taxeMode==='tps')tLine('TPS (5%)',fmt(c.tps));
+
+  doc.setFillColor(17,17,17);doc.rect(tx,y,totW,13,'F');
+  doc.setFont('helvetica','bold');doc.setFontSize(9);doc.setTextColor(255,255,255);doc.text('TOTAL',tx+4,y+8.5);
+  doc.setFontSize(14);doc.setTextColor(232,101,26);doc.text(fmt(c.total),PW-M-3,y+9,{align:'right'});y+=18;
+
+  const blocs=[{tag:'MODALITÉS DE PAIEMENT',txt:paiement},{tag:'GARANTIE',txt:garantie},{tag:'EXCLUSIONS',txt:exclusions}].filter(b=>b.txt);
+  if(blocs.length){y+=2;blocs.forEach(b=>{
+    if(y>248){doc.addPage();y=15;}
+    doc.setFont('helvetica','bold');doc.setFontSize(7);doc.setTextColor(160,160,160);doc.text(b.tag,M,y);y+=4;
+    doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(80,80,80);
+    const lines=doc.splitTextToSize(b.txt,PW-2*M);doc.text(lines,M,y);y+=lines.length*4+5;
+  });}
+
+  const np=doc.internal.getNumberOfPages();
+  for(let i=1;i<=np;i++){
+    doc.setPage(i);
+    doc.setFillColor(17,17,17);doc.rect(0,271,PW,16,'F');
+    doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(100,100,100);
+    doc.text(`${soumNum} · ${entNom}`,M,280);
+    doc.setTextColor(232,101,26);
+    doc.text('Valide '+validite+(garantie?' · '+garantie:''),PW-M,280,{align:'right'});
+  }
+  doc.save(`Soumission_${soumNum}_${cliNom.replace(/\s+/g,'_')}.pdf`);
+}
+
+// ════════════════════════════
+// RESET
+// ════════════════════════════
+function resetDemo() {
+  currentStep = 1;
+  soumNum = 'S-' + String(1000 + Math.floor(Math.random() * 900));
+  document.querySelectorAll('input[type="text"],input[type="email"],input[type="number"],textarea').forEach(el => {
+    if (el.id !== 'proj-debut') el.value = '';
+  });
+  document.getElementById('marge').value = 15;
+  document.getElementById('taxes').value = 'both';
+  const d = new Date(); d.setDate(d.getDate()+60);
+  document.getElementById('proj-debut').value = d.toISOString().split('T')[0];
+  document.getElementById('overlay').classList.remove('hidden');
+  document.getElementById('doc-wrap').style.display = 'none';
+  document.getElementById('float-total').style.display = 'none';
+  document.getElementById('tab-badge').style.display = 'none';
+  selectTpl('maison');
+  updateNav();
+  if (window.innerWidth <= 768) switchTab('form');
+}
+</script>
+</body>
+</html>
